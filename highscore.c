@@ -40,16 +40,3 @@ void free_structure(highscore* wynik){//zwalnia pamięć
 
 //Plik stats.txt:
 //[NAME] [SCORE] [LEVEL]
-
-int main() {
-    int score = 1500;
-    int level = 3;
-    char name[] = "Antek";
-
-    highscore* wynik = init();
-
-    send_data(wynik, score, level, name);
-    write_and_save(wynik);
-    free_structure(wynik);
-    return 0;
-}
