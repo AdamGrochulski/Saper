@@ -3,6 +3,7 @@
 #include "sweeper.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <time.h>
 
 Board * generatorForBoard() {
 
@@ -35,12 +36,13 @@ Board * generatorForBoard() {
 
     int count = 0;
     int temp;
+    unsigned int seed = time(0);
     i=0;
     j=0;
 
-    while (count<board->m) {
-        i=rand() % r;
-        j=rand() % c;
+    while (count<=board->m) {
+        i=rand_r(&seed) % r;
+        j=rand_r(&seed) % c;
 
         temp = board->data[i][j];
 
@@ -55,19 +57,22 @@ Board * generatorForBoard() {
 
     for (i=0; i < r; i++) {
         for (j=0; j < c; j++) {
-            for(k=y-1;k<=y+1;k++) {
-                if (k>=0 && k<c) {
-                    for(l=x-1;l<=x+1;l++) {
-                        if (l>=0 && l<r) {
-                            if (board->data[l][k] == -1 && board->data[i][j] != -1) {
-                                count++;
+            if (board->data[i][j] != -1) {
+                for(k=j-1;k<=j+1;k++) {
+                    if (k>=0 && k<c) {
+                        for(l=i-1;l<=i+1;l++) {
+                            if (l>=0 && l<r) {
+                                if (board->data[l][k] == -1) {
+                                    count+=1;
+                                }
                             }
                         }
                     }
                 }
-            }
-            board->data[i][j]=count;
+                board->data[i][j]=count;
+                
             count=0;
+            }
         }
     }
 
