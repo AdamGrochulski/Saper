@@ -5,16 +5,19 @@
 #include <stdlib.h>
 #include <time.h>
 
-void red () {
-  printf("\033[1;31m");
-}
-
-void yellow() {
-  printf("\033[1;33m");
-}
-
-void reset () {
-  printf("\033[0m");
+void Colors(int type) {
+    if (type == 0) //Zmiana koloru na domyślny
+        printf("\033[0m");
+    if (type == 1) //Zmiana koloru na niebieski
+        printf("\033[1;34m");
+    if (type == 2) //Zmiana koloru na zielony
+        printf("\033[1;32m");
+    if (type == 3) //Zmiana koloru na czerwony
+        printf("\033[1;31m");
+    if (type >= 4) //Zmiana koloru na fioletowy
+        printf("\033[1;35m");
+    if (type == -1) //Zmiana koloru na 
+        printf("\033[1;36m");
 }
 
 Board * generatorForBoard() {
@@ -86,7 +89,9 @@ Board * generatorForBoard() {
     revealTiles(board,x,y);
     printBoard(board);
 
-    commandPicker(board, pos,1);
+    while (board->Run==0) {
+        commandPicker(board, pos,1);
+    }
 
 
 
@@ -96,6 +101,7 @@ Board * createBoardData(Board *board) {
     int i,j;
     int r = board->r;
     int c = board->c;
+    board->Run=0;
 
     board->data = (int**) malloc(sizeof(int*) * r);
     board->shown = (char***) malloc(sizeof(char**) * r);
@@ -125,17 +131,15 @@ void printBoard(Board *board) {
         for (j = 0; j < c; j++) {
             if (board->shown[i][j]!=" ") {
                 if (board->data[i][j] >= 0) {
-                    yellow();
+                    Colors(board->data[i][j]);
                     printf("  %s", board->shown[i][j]);
-                    reset();
-                    printf(" |");
-                }
+                } 
                 else {
-                    red();
+                    Colors(-1);       
                     printf(" %s", board->shown[i][j]);
-                    reset();
-                    printf(" |");
                 }
+                Colors(0);
+                printf(" |");
             }
             else {
                 printf("  %s |", board->shown[i][j]);

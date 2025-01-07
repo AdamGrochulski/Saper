@@ -17,7 +17,6 @@ void commandPicker(Board *board, Pos *pos, int type) {
                     playerMove(board,pos,x-1,y-1,0);
                     break;         
             }
-            commandPicker(board, pos,1);
     }
     else {
         if (choice=='f') {
@@ -32,7 +31,6 @@ void commandPicker(Board *board, Pos *pos, int type) {
 }
 void revealTiles(Board *board, int x, int y) {
     int k,l;
-    printf(board->shown[x][y]);
     if (board->data[x][y] == 0 && strcmp(board->shown[x][y]," ") == 0) {
         board->shown[x][y]=toString(board->data[x][y]);
         for(k=y-1;k<=y+1;k++) {
@@ -40,8 +38,6 @@ void revealTiles(Board *board, int x, int y) {
                 for(l=x-1;l<=x+1;l++) {
                     if (l>=0 && l<board->r) {
                         if (board->data[l][k] != -1) {
-                            printf("l: %d k: %d ",l,k);
-                            printf(" \n");
                             revealTiles(board,l,k);
                             board->shown[l][k] = toString(board->data[l][k]);
                         }
@@ -58,7 +54,13 @@ void revealTiles(Board *board, int x, int y) {
 void playerMove(Board *board, Pos *pos, int x, int y, int type) {
     pos->x=x;
     pos->y=y;
-    revealTiles(board,x,y);
+    if (board->data[x][y] != -1) {
+        revealTiles(board,x,y);
+    }
+    else {
+        board->shown[x][y]=toString(board->data[x][y]);
+        board->Run=1;
+    }
     printBoard(board);
 }       
     
