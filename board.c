@@ -5,13 +5,25 @@
 #include <stdlib.h>
 #include <time.h>
 
+void red () {
+  printf("\033[1;31m");
+}
+
+void yellow() {
+  printf("\033[1;33m");
+}
+
+void reset () {
+  printf("\033[0m");
+}
+
 Board * generatorForBoard() {
 
     Board * board = (Board*) malloc(sizeof(Board));
     Pos * pos = (Pos*) malloc(sizeof(Pos));
 
     iChooseYou(board);
-    commandPicker(pos,0);
+    commandPicker(board,pos,0);
     createBoardData(board);
 
     int i,j,k,l;
@@ -32,15 +44,13 @@ Board * generatorForBoard() {
 
     board->data[x][y]=0;
 
-    printBoard(board);
-
     int count = 0;
     int temp;
     unsigned int seed = time(0);
     i=0;
     j=0;
 
-    while (count<=board->m) {
+    while (count<board->m) {
         i=rand_r(&seed) % r;
         j=rand_r(&seed) % c;
 
@@ -50,8 +60,6 @@ Board * generatorForBoard() {
             board->data[i][j]=-1;
             count++;
     }
-
-    printBoard(board);
 
     count = 0;
 
@@ -75,8 +83,13 @@ Board * generatorForBoard() {
             }
         }
     }
-
+    revealTiles(board,x,y);
     printBoard(board);
+
+    commandPicker(board, pos,1);
+
+
+
 }
 
 Board * createBoardData(Board *board) {
@@ -85,15 +98,19 @@ Board * createBoardData(Board *board) {
     int c = board->c;
 
     board->data = (int**) malloc(sizeof(int*) * r);
+    board->shown = (char***) malloc(sizeof(char**) * r);
     for (i=0; i < r; i++) {
         board->data[i] = (int*) malloc(sizeof(int)*c);
+        board->shown[i] = (char**) malloc(sizeof(char*)*c);
     }
     for (i=0; i < r; i++) {
         for (j=0; j < c; j++) {
             board->data[i][j]=-3;
+            board->shown[i][j]=" ";
         }
     }
 }
+
 
 void printBoard(Board *board) {
     int i,j;
@@ -106,10 +123,24 @@ void printBoard(Board *board) {
     for (i=0;i<r;i++) {
         printf("|");
         for (j = 0; j < c; j++) {
-            if (board->data[i][j] >= 0)
-                printf("  %d |", board->data[i][j]);
-            else 
-                printf(" %d |", board->data[i][j]);       
+            if (board->shown[i][j]!=" ") {
+                if (board->data[i][j] >= 0) {
+                    yellow();
+                    printf("  %s", board->shown[i][j]);
+                    reset();
+                    printf(" |");
+                }
+                else {
+                    red();
+                    printf(" %s", board->shown[i][j]);
+                    reset();
+                    printf(" |");
+                }
+            }
+            else {
+                printf("  %s |", board->shown[i][j]);
+            }
+
         }
         printf("\n");
     }
@@ -120,5 +151,11 @@ void printBoard(Board *board) {
     printf("\n");
 }
 
+char* toString(int num) {
+    int length = snprintf( NULL, 0, "%d", num );
+    char* str = malloc( length + 1 );
+    snprintf( str, length + 1, "%d", num );
+    return str;
+}
 
 
