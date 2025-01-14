@@ -1,107 +1,56 @@
-#include "board.h"
-#include "levels.h"
-#include "sweeper.h"
 #include <stdio.h>
 #include <stdlib.h>
-#include <time.h>
+#include <time.h> //Używany, by wygenerować losowo bomby
+
+#include "levels.h"
+#include "board.h"
+#include "sweeper.h"
+
+//Notatki twórcze
+//Wszystkie funkcje w board.c zostały zrobione zgodnie z planem
+//-> implementacja board.c i board.h - Adam Grochulski
+//-> wymyślenie algorytmu generowania planszy - Przemek Pindrala
 
 void Colors(int type) {
-    if (type == 0) //Zmiana koloru na domyślny
+    if (type == 0) //Zmiana koloru na domyślny (symbol 0 i tekst)
         printf("\033[0m");
-    if (type == 1) //Zmiana koloru na niebieski
+    if (type == 1) //Zmiana koloru na niebieski (symbol 1)
         printf("\033[1;34m");
-    if (type == 2) //Zmiana koloru na zielony
+    if (type == 2) //Zmiana koloru na zielony (symbol 2)
         printf("\033[1;32m");
-    if (type == 3) //Zmiana koloru na czerwony
+    if (type == 3) //Zmiana koloru na czerwony (symbol 3)
         printf("\033[1;31m");
-    if (type >= 4) //Zmiana koloru na fioletowy
+    if (type >= 4) //Zmiana koloru na fioletowy (symbol 4-8)
         printf("\033[1;35m");
-    if (type == -1) //Zmiana koloru na 
-        printf("\033[1;36m");
+    if (type == -1) //Zmiana koloru na żółty (symbol bomby)
+        printf("\033[1;33m");
 }
 
-Board * generatorForBoard() {
-
-    Board * board = (Board*) malloc(sizeof(Board));
-    Pos * pos = (Pos*) malloc(sizeof(Pos));
-
+void generatorForBoard(Board *board,Pos *pos) {
+    //Funkcja iChooseYou z biblioteki levels.h pozwala graczowi wybrać poziom trudności
     iChooseYou(board);
+
+    //Pierwszy input gracza, jako że pierwszy ruch narzuca nam wygląd planszy to w funkcji commandPicker zmienna type = 0
     commandPicker(board,pos,0);
-    createBoardData(board);
 
-    int i,j,k,l;
-    int r = board->r;
-    int c = board->c;
-    int x = pos->x;
-    int y = pos->y;
+    //Tworzenie naszej planszy (generowanie oznaczeń w każdej komórce planszy)
+    createBoardData(board); //Przypisywanie pamięci do wszystkich argumentów struct Board * board
 
-    for(k=y-1;k<=y+1;k++) {
-        if (k>=0 && k<c) {
-            for(l=x-1;l<=x+1;l++) {
-                if (l>=0 && l<r) {
-                    board->data[l][k]=-2;
-                }
-            }
-        }
-    }
+    firstInputPlacement(board, pos); //Wpisywanie pierwszego inputu gracza w dacie structa board
+                                     //oraz oznaczanie miejsc wokół niego, jako takie, które nie mogą mieć bomb
 
-    board->data[x][y]=0;
+    bombGeneration(board); //Losowe generowanie bomb na planszy
+    
+    bombCounter(board); //Zliczanie bomb w celu oznaczenia "wartości" każdego pola na planszy
 
-    int count = 0;
-    int temp;
-    unsigned int seed = time(0);
-    i=0;
-    j=0;
-
-    while (count<board->m) {
-        i=rand_r(&seed) % r;
-        j=rand_r(&seed) % c;
-
-        temp = board->data[i][j];
-
-        if (temp != 0 && temp != -2 && temp !=-1)
-            board->data[i][j]=-1;
-            count++;
-    }
-
-    count = 0;
-
-    for (i=0; i < r; i++) {
-        for (j=0; j < c; j++) {
-            if (board->data[i][j] != -1) {
-                for(k=j-1;k<=j+1;k++) {
-                    if (k>=0 && k<c) {
-                        for(l=i-1;l<=i+1;l++) {
-                            if (l>=0 && l<r) {
-                                if (board->data[l][k] == -1) {
-                                    count+=1;
-                                }
-                            }
-                        }
-                    }
-                }
-                board->data[i][j]=count;
-                
-            count=0;
-            }
-        }
-    }
-    revealTiles(board,x,y);
-    printBoard(board);
-
-    while (board->Run==0) {
-        commandPicker(board, pos,1);
-    }
-
-
-
+    board->Run=0; //Zdefiniowanie, że gra jest w toku
 }
 
 Board * createBoardData(Board *board) {
+    //Funkcja przypisuje pamięć dla tablicy z danymi oraz tablicy widocznej dla gracza
     int i,j;
     int r = board->r;
     int c = board->c;
-    board->Run=0;
 
     board->data = (int**) malloc(sizeof(int*) * r);
     board->shown = (char***) malloc(sizeof(char**) * r);
@@ -109,6 +58,8 @@ Board * createBoardData(Board *board) {
         board->data[i] = (int*) malloc(sizeof(int)*c);
         board->shown[i] = (char**) malloc(sizeof(char*)*c);
     }
+    //Tablice z danymi uzupełnia liczbą -3 (w kodzie oznacza liczbę, która nie została przetworzona)
+    //oraz tablice widoczną dla gracza uzupełnia " " (nie odkryte pole)
     for (i=0; i < r; i++) {
         for (j=0; j < c; j++) {
             board->data[i][j]=-3;
@@ -117,17 +68,90 @@ Board * createBoardData(Board *board) {
     }
 }
 
+void firstInputPlacement(Board *board, Pos *pos) {
+    //Funkcja, która zapisuje w tablicy z danymi pierwszy input gracza, jako 0
+    //oraz pola wokół niego, jako -2 (w kodzie oznacza liczbę, która nie może być miną)
+    int x = pos->x;
+    int y = pos->y;
+
+    aroundTheArea(board,x,y,0);
+
+    board->data[x][y]=0; //Zapisanie pierwszego inputa gracza, jako 0
+}
+
+void bombGeneration(Board *board) {
+    int i,j;
+    int count = 0; //Licznik bomb używany, aby określić ile bomb zostało zapisanych już na tablicy
+    unsigned int seed = time(0); //Wybranie losowe seeda bomb na podstawie czasu systemowego
+
+    while (count<board->m) {
+        i=rand_r(&seed) % board->r; //Przypisanie losowego pola [i,j], jako potencjalnego miejsca na bombę
+        j=rand_r(&seed) % board->c;
+
+        if (board->data[i][j] == -3) { //Sprawdzenie czy pole w tabeli danych planszy jest równe -3 (jest to pole na którym bomba może być)
+            board->data[i][j]=-1; //Przypisanie bombie wartości -1 w tabeli z danymi
+            count++;
+        }
+    }
+}
+
+void bombCounter(Board *board) {
+    int i,j;
+    int count; //Ilość bomb wokół pola [i,j]
+    for (i=0; i < board->r; i++) {
+        for (j=0; j < board->c; j++) {
+            if (board->data[i][j] != -1) {
+                count=aroundTheArea(board,i,j,1); //Funkcja aroundTheArea przyjmuje type=1, kiedy chcemy zliczyć bomby wokoł pola [i,j] 
+                board->data[i][j]=count; //Zapisujemy w dacie, bo w końcu wartość każdego pola jest ilością bomb wokół niego
+            }
+        }       
+    }
+}
+
+int aroundTheArea(Board *board, int x, int y, int type) {
+    int i_around,j_around;
+    int count=0; 
+    //W tym fragmecie kodu poruszamy się wokół pola [x,y] ([x-1,y-1] [x,y-1] [x+1,y-1] itd.)
+    for(j_around=y-1;j_around<=y+1;j_around++) {
+        if (j_around>=0 && j_around<board->c) {
+            for(i_around=x-1;i_around<=x+1;i_around++) {
+                if (i_around>=0 && i_around<board->r) {
+                    if (type == 0) { //Type 0 używamy przy tworzeniu tablicy, aby określić, że miejsca wokół pierwszego zaznaczego pola nie mogą być bombami
+                        board->data[i_around][j_around]=-2; //Zapisujemy miejsce [i_around,j_around], jako -2 (nie może tu być miny)
+                    }
+                    if (type == 1) { //Type 1 używamy przy wyznaczaniu wartości poszczególnych pól na planszy
+                        if (board->data[i_around][j_around] == -1)
+                                    count+=1;
+                    }
+                }
+            }
+        }
+    }
+    if (type==0)
+        return 0; //Zwracamy "symbolicznie" 0, ponieważ dla type=0 wartość funkcji nie jest używania
+    if (type==1)
+        return count; //Zwracamy liczbę bomb wokoł pola [x,y] 
+}
 
 void printBoard(Board *board) {
     int i,j;
     int r = board->r;
     int c = board->c;
     for (j = 0; j < c; j++) {
-        printf("=====");
+        if (j==0)
+            printf("====");
+        if (j+1<10) 
+            printf("= 0%d ",j+1);
+        else {
+            printf("= %d ",j+1);
+        }
     }
     printf("=\n");
     for (i=0;i<r;i++) {
-        printf("|");
+        printf(" ");
+        if (i+1<10)
+            printf("0");
+        printf("%d |",i+1);
         for (j = 0; j < c; j++) {
             if (board->shown[i][j]!=" ") {
                 if (board->data[i][j] >= 0) {
@@ -136,30 +160,60 @@ void printBoard(Board *board) {
                 } 
                 else {
                     Colors(-1);       
-                    printf(" %s", board->shown[i][j]);
+                    printf("  *");
                 }
                 Colors(0);
-                printf(" |");
             }
             else {
-                printf("  %s |", board->shown[i][j]);
+                printf("  %s", board->shown[i][j]);
             }
-
+            printf(" |");
         }
         printf("\n");
     }
     for (j = 0; j < c; j++) {
+        if (j==0)
+            printf("====");
         printf("=====");
     }
     printf("=\n");
     printf("\n");
 }
 
-char* toString(int num) {
-    int length = snprintf( NULL, 0, "%d", num );
-    char* str = malloc( length + 1 );
-    snprintf( str, length + 1, "%d", num );
-    return str;
+void printBoardDebug(Board *board) {
+    int i,j;
+    int r = board->r;
+    int c = board->c;
+    for (j = 0; j < c; j++) {
+        if (j==0)
+            printf("====");
+        if (j+1<10) 
+            printf("= 0%d ",j+1);
+        else {
+            printf("= %d ",j+1);
+        }
+    }
+    printf("=\n");
+    for (i=0;i<r;i++) {
+        printf(" ");
+        if (i+1<10)
+            printf("0");
+        printf("%d |",i+1);
+        for (j = 0; j < c; j++) {
+            printf("  %d", board->data[i][j]);
+
+            printf(" |");
+        }
+        printf("\n");
+    }
+    for (j = 0; j < c; j++) {
+        if (j==0)
+            printf("====");
+        printf("=====");
+    }
+    printf("=\n");
+    printf("\n");
 }
+
 
 

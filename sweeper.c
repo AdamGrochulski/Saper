@@ -4,6 +4,24 @@
 #include <stdio.h>
 #include <string.h>
 
+void gameEngine() {
+    //Przypisywania pamięci do struct board oraz struct pos
+    Board * board = (Board*) malloc(sizeof(Board));
+    Pos * pos = (Pos*) malloc(sizeof(Pos));
+
+    //Funkcja generująca plansze
+    generatorForBoard(board,pos);
+
+    //Rozgrywka
+    revealTiles(board,pos->x,pos->y);
+    printBoard(board);
+
+    while (board->Run==0) {
+        commandPicker(board, pos,1);
+    }
+    free(board);
+    free(pos);
+}
 void commandPicker(Board *board, Pos *pos, int type) {
     char choice;
     int x,y;
@@ -13,13 +31,13 @@ void commandPicker(Board *board, Pos *pos, int type) {
     
     if (type==1) {
             switch (choice) {
-                case 'f':
+                case 'r':
                     playerMove(board,pos,x-1,y-1,0);
                     break;         
             }
     }
     else {
-        if (choice=='f') {
+        if (choice=='r') {
             pos->x=x-1;
             pos->y=y-1;
         }
@@ -30,16 +48,16 @@ void commandPicker(Board *board, Pos *pos, int type) {
     }
 }
 void revealTiles(Board *board, int x, int y) {
-    int k,l;
+    int i_around,j_around;
     if (board->data[x][y] == 0 && strcmp(board->shown[x][y]," ") == 0) {
         board->shown[x][y]=toString(board->data[x][y]);
-        for(k=y-1;k<=y+1;k++) {
-            if (k>=0 && k<board->c) {
-                for(l=x-1;l<=x+1;l++) {
-                    if (l>=0 && l<board->r) {
-                        if (board->data[l][k] != -1) {
-                            revealTiles(board,l,k);
-                            board->shown[l][k] = toString(board->data[l][k]);
+        for(j_around=y-1;j_around<=y+1;j_around++) {
+            if (j_around>=0 && j_around<board->c) {
+                for(i_around=x-1;i_around<=x+1;i_around++) {
+                    if (i_around>=0 && i_around<board->r) {
+                        if (board->data[i_around][j_around] != -1) {
+                            revealTiles(board,i_around,j_around);
+                            board->shown[i_around][j_around] = toString(board->data[i_around][j_around]);
                         }
                     }
                 }
@@ -63,4 +81,10 @@ void playerMove(Board *board, Pos *pos, int x, int y, int type) {
     }
     printBoard(board);
 }       
-    
+
+char* toString(int num) {
+    int length = snprintf( NULL, 0, "%d", num );
+    char* str = malloc( length + 1 );
+    snprintf( str, length + 1, "%d", num );
+    return str;
+}

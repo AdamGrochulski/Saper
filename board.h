@@ -1,21 +1,16 @@
 #ifndef _BOARD_H
 #define _BOARD_H
 
-typedef struct {
-    int r,c; //Wielkość tablicy r(liczba wierszy) x c(liczba kolumn)
-    int m; //Ilość min
-    int **data; //Wartości każde pozycji na planszy sapera od (-1 - 8), gdzie -1 to bomba, 0 - 8 liczba bomb wokół danego pola
-    char ***shown; //Wartości które są widoczne
-    int multiplier; //Wartość mnożnika zależny od poziomu trudności (łatwy - 1, normalny - 2, trudny - 3)
-    int Run; //Przyjmuje: 0 - gdy program MineSweeper działa, 1 - gdy gra się kończy (klikając bombę lub zapisując do pliku)
-
-} Board;
+#include "struct.h"
 
 void Colors(int type);
-Board * generatorForBoard();
+void generatorForBoard(Board *board,Pos *pos);
 Board * createBoardData(Board *board);
+void firstInputPlacement(Board *board, Pos *pos);
+void bombGeneration(Board *board);
+void bombCounter(Board *board);
+int aroundTheArea(Board *board, int x, int y, int type);
 void printBoard(Board *board);
-char* toString(int num);
-
+void printBoardDebug(Board *board);
 
 #endif
