@@ -8,13 +8,13 @@ void gameEngine() {
     //Przypisywania pamięci do struct board oraz struct pos
     Board * board = (Board*) malloc(sizeof(Board));
     Pos * pos = (Pos*) malloc(sizeof(Pos));
-
     //Funkcja generująca plansze
     generatorForBoard(board,pos);
 
     //Rozgrywka
     revealTiles(board,pos->x,pos->y);
     printBoard(board);
+    //printBoardDebug(board);
 
     while (board->Run==0) {
         commandPicker(board, pos,1);
@@ -33,7 +33,10 @@ void commandPicker(Board *board, Pos *pos, int type) {
             switch (choice) {
                 case 'r':
                     playerMove(board,pos,x-1,y-1,0);
-                    break;         
+                    break;
+                case 'f':
+                    place_flag(board,pos,x-1,y-1,board->score);
+                    break;
             }
     }
     else {
@@ -87,4 +90,31 @@ char* toString(int num) {
     char* str = malloc( length + 1 );
     snprintf( str, length + 1, "%d", num );
     return str;
+}
+
+void place_flag(Board *board, Pos *pos, int x, int y, int score){
+    if(contains_specific_letter(board->shown[x][y], 'F')){
+        if(contains_specific_letter(board->shown[x][y], 'F') && board->data[x][y] == -1){
+            board->shown[x][y] = toString(board->data_origin[x][y]);
+            score--;
+        }
+        else if (contains_specific_letter(board->shown[x][y], 'F') && board->data[x][y] != -1){
+            board->shown[x][y] = toString(board->data_origin[x][y]);
+            score++;
+        }
+        board->shown[x][y] = toString(board->data_origin[x][y]);
+    }
+    else if(contains_specific_letter(board->shown[x][y], ' ')){
+        board->shown[x][y] = "F";
+        if(contains_specific_letter(board->shown[x][y], 'F') && board->data[x][y] == -1){
+            score++;
+        }
+        else if(contains_specific_letter(board->shown[x][y], 'F') && board->data[x][y] != -1){
+            score--;
+        }
+    }
+    else{
+        printf("Nie można ustawić flagi na odkrytm miejscu.\n");
+    }
+    printBoard(board);
 }

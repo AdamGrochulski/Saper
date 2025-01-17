@@ -38,12 +38,13 @@ void generatorForBoard(Board *board,Pos *pos) {
 
     firstInputPlacement(board, pos); //Wpisywanie pierwszego inputu gracza w dacie structa board
                                      //oraz oznaczanie miejsc wokół niego, jako takie, które nie mogą mieć bomb
-
     bombGeneration(board); //Losowe generowanie bomb na planszy
     
     bombCounter(board); //Zliczanie bomb w celu oznaczenia "wartości" każdego pola na planszy
 
     board->Run=0; //Zdefiniowanie, że gra jest w toku
+
+    origin_sync(board);
 }
 
 Board * createBoardData(Board *board) {
@@ -51,11 +52,14 @@ Board * createBoardData(Board *board) {
     int i,j;
     int r = board->r;
     int c = board->c;
+    board->score = 0;
 
     board->data = (int**) malloc(sizeof(int*) * r);
+    board->data_origin = (int**) malloc(sizeof(int*) * r);
     board->shown = (char***) malloc(sizeof(char**) * r);
     for (i=0; i < r; i++) {
         board->data[i] = (int*) malloc(sizeof(int)*c);
+        board->data_origin[i] = (int*) malloc(sizeof(int)*c);
         board->shown[i] = (char**) malloc(sizeof(char*)*c);
     }
     //Tablice z danymi uzupełnia liczbą -3 (w kodzie oznacza liczbę, która nie została przetworzona)
@@ -153,12 +157,15 @@ void printBoard(Board *board) {
             printf("0");
         printf("%d |",i+1);
         for (j = 0; j < c; j++) {
-            if (board->shown[i][j]!=" ") {
+            if (contains_specific_letter(board->shown[i][j], ' ') -1 ) { // TU JEDNAK MUSI TO ZOSTAĆ (board->shown[i][j]!=" ")
                 if (board->data[i][j] >= 0) {
                     Colors(board->data[i][j]);
                     printf("  %s", board->shown[i][j]);
                 } 
-                else {
+                else if(contains_specific_letter(board->shown[i][j], 'F')){
+                    printf("  F");    
+                }
+                else {  // TUUUUUTAJ TRZEBA ZMIENIC WARUNEK ZEBY DZIALALO Z FLAGAMI
                     Colors(-1);       
                     printf("  *");
                 }
@@ -213,6 +220,25 @@ void printBoardDebug(Board *board) {
     }
     printf("=\n");
     printf("\n");
+}
+
+//synchronizuje data i data_origin
+void origin_sync(Board *board){
+    for(int i = 0; i < board->r; i++){
+        for(int j = 0; j < board->c; j++){
+            board->data_origin[i][j] = board->data[i][j];
+        }
+    } 
+}
+
+int contains_specific_letter(const char *str, char letter) {
+    while (*str) {
+        if (*str == letter) {
+            return 1;
+        }
+        str++;
+    }
+    return 0;
 }
 
 

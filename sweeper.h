@@ -8,5 +8,6 @@ void commandPicker(Board *board, Pos *pos, int type);
 void playerMove(Board *board, Pos *pos, int x, int y, int type);
 void revealTiles(Board *board, int x, int y);
 char* toString(int num);
+void place_flag(Board *Board, Pos *pos, int x, int y, int score);
 
 #endif
