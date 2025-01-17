@@ -54,20 +54,22 @@ Board * createBoardData(Board *board) {
     int c = board->c;
     board->score = 0;
 
-    board->data = (int**) malloc(sizeof(int*) * r);
-    board->data_origin = (int**) malloc(sizeof(int*) * r);
-    board->shown = (char***) malloc(sizeof(char**) * r);
+    board->data = malloc(sizeof(int*) * r);
+    board->data_origin = malloc(sizeof(int*) * r);
+    board->shown_origin = malloc(sizeof(char*) * r);
+    board->shown = malloc(sizeof(char*) * r);
     for (i=0; i < r; i++) {
-        board->data[i] = (int*) malloc(sizeof(int)*c);
-        board->data_origin[i] = (int*) malloc(sizeof(int)*c);
-        board->shown[i] = (char**) malloc(sizeof(char*)*c);
+        board->data[i] = malloc(sizeof(int)*c);
+        board->data_origin[i] = malloc(sizeof(int)*c);
+        board->shown[i] = malloc(sizeof(char)*c);
+        board->shown_origin = malloc(sizeof(char) * c);
     }
     //Tablice z danymi uzupełnia liczbą -3 (w kodzie oznacza liczbę, która nie została przetworzona)
     //oraz tablice widoczną dla gracza uzupełnia " " (nie odkryte pole)
     for (i=0; i < r; i++) {
         for (j=0; j < c; j++) {
             board->data[i][j]=-3;
-            board->shown[i][j]=" ";
+            board->shown[i][j]= ' ';
         }
     }
 }
@@ -157,22 +159,23 @@ void printBoard(Board *board) {
             printf("0");
         printf("%d |",i+1);
         for (j = 0; j < c; j++) {
-            if (contains_specific_letter(board->shown[i][j], ' ') -1 ) { // TU JEDNAK MUSI TO ZOSTAĆ (board->shown[i][j]!=" ")
-                if (board->data[i][j] >= 0) {
-                    Colors(board->data[i][j]);
-                    printf("  %s", board->shown[i][j]);
+            if(board->shown[i][j] != ' ') {
+                if(board->data[i][j] >= 0) {
+                    Colors(board->data[i][j]); // te kolory powinny raczej byc w makrze
+                    printf("  %c", board->shown[i][j]);
                 } 
-                else if(contains_specific_letter(board->shown[i][j], 'F')){
+                else if(board->shown[i][j] == 'F'){
+                    Colors(0); // FLAGA BĘDZIE BIAŁA
                     printf("  F");    
                 }
-                else {  // TUUUUUTAJ TRZEBA ZMIENIC WARUNEK ZEBY DZIALALO Z FLAGAMI
+                else{
                     Colors(-1);       
                     printf("  *");
                 }
                 Colors(0);
             }
             else {
-                printf("  %s", board->shown[i][j]);
+                printf("  %c", board->shown[i][j]);
             }
             printf(" |");
         }
@@ -227,6 +230,14 @@ void origin_sync(Board *board){
     for(int i = 0; i < board->r; i++){
         for(int j = 0; j < board->c; j++){
             board->data_origin[i][j] = board->data[i][j];
+        }
+    } 
+}
+
+void shown_origin_sync(Board *board){
+    for(int i = 0; i < board->r; i++){
+        for(int j = 0; j < board->c; j++){
+            board->shown_origin[i][j] = board->shown[i][j];
         }
     } 
 }
