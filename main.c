@@ -6,5 +6,4 @@
 void main() {
     Colors(0); //Zamienie czcionki na bold na czas trwania całej gry.
     gameEngine();
-
 }
