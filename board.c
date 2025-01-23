@@ -31,7 +31,7 @@ void generatorForBoard(Board *board,Pos *pos) {
     iChooseYou(board);
 
     //Pierwszy input gracza, jako że pierwszy ruch narzuca nam wygląd planszy to w funkcji commandPicker zmienna type = 0
-    commandPicker(board,pos,0);
+    commandPicker(board,pos, 0);
 
     //Tworzenie naszej planszy (generowanie oznaczeń w każdej komórce planszy)
     createBoardData(board); //Przypisywanie pamięci do wszystkich argumentów struct Board * board
@@ -232,5 +232,44 @@ int contains_specific_letter(const char *str, char letter) {
     return 0;
 }
 
+int generatorFromFile(Board *board,Pos *pos, FILE *file) {
+    int count = 0;
+    int i_line = 0;
+    char lines[MAX_LENGTH][MAX_LINES];
+    while(i_line < MAX_LINES && fscanf(file, "%s", lines[i_line])==1) {
+        i_line++;
+    }
+    fclose(file);
+    board->r=atoi(lines[0]);
+    board->c=atoi(lines[1]);
+    board->m=atoi(lines[2]);
+    board->multiplier=atoi(lines[3]);
+    createBoardData(board);
+    int pos_i = -1;
+    for(int i = 4; i < (board->r*board->c) + 4;i++){
+        int pos_j=(i-4)%(board->c);
+        if(pos_j == 0) {
+            pos_i++;
+        }
+        board->data[pos_i][pos_j]=atoi(lines[i]);
+    }
+    int tmp = (board->r*board->c) + 4;
+    int length = atoi(lines[tmp]);
+    tmp = tmp+1;
 
+    for(int i = 0; i < length*3;i++){
+        if(i%3==0){
+            char action = (lines[i+tmp])[0];
+            int x = atoi(lines[i+tmp+1]);
+            int y = atoi(lines[i+tmp+2]);
+            if(action == 'r' && board->Run==0)
+                playerMove(board,pos,x-1,y-1,0);
+            else {
+                place_flag(board,pos,x-1,y-1);
+            }
+            sync_flag(board, count);
+        }
+    }
+    return count;
+}
 

@@ -5,24 +5,28 @@
 #include <stdio.h>
 #include <string.h>
 
-void gameEngine() {
+void gameEngine(FILE *file) {
     //Przypisywania pamięci do struct board oraz struct pos
     Board * board = (Board*) malloc(sizeof(Board));
     Pos * pos = (Pos*) malloc(sizeof(Pos));
     int count = 0;
-    //Funkcja generująca plansze
-    generatorForBoard(board,pos);
-    //Rozgrywka
-    revealTiles(board,pos->x,pos->y);
-    printBoard(board);
-    //printBoardDebug(board);
-    board->flag_remain = board->m;
-
-    while (board->Run==0) {
-        commandPicker(board, pos,1);
-        sync_flag(board, count);
-    }
     
+    if(file == NULL) {
+        //Funkcja generująca plansze
+        generatorForBoard(board,pos);
+        //Rozgrywka
+        revealTiles(board,pos->x,pos->y);
+        printBoard(board);
+        //printBoardDebug(board);
+        board->flag_remain = board->m;
+        while (board->Run==0) {
+            commandPicker(board, pos, 1);
+            sync_flag(board, count);
+        }
+    } else {
+        //Gra z pliku
+        count = generatorFromFile(board,pos,file);
+    }
     result(board, count);
     if(board->win == 1){
         char* name = nametag();
@@ -60,7 +64,7 @@ void commandPicker(Board *board, Pos *pos, int type) {
         }
         else {
             printf("Pierwsze polecenie musi być wybraniem pola!\n"); //Jeśli nie została wybrana komenda 'r' to wtedy prosimy jeszcze raz
-            commandPicker(board, pos,0);
+            commandPicker(board, pos, 0);
         }
     }
 }
@@ -102,7 +106,8 @@ void playerMove(Board *board, Pos *pos, int x, int y, int type) {
         board->Run=1;
     }
     printBoard(board);
-}       
+}
+
 //Funckja pomocniczna która zamienia integer na string
 char* toString(int num) {
     int length = snprintf( NULL, 0, "%d", num );
@@ -172,9 +177,6 @@ void sync_flag(Board *board, int count){
     if(count == board->m){
         board->Run = 1;
         board->win = 1;
-    }
-    else{
-        board->Run = 0;
     }
     board->score = count;
 }

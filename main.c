@@ -11,7 +11,7 @@ int main(int argc, char** argv) {
     while(option = getopt(argc, argv, "pfh")) {
         switch(option) {
             case 'p':
-                gameEngine();
+                gameEngine(NULL);
                 break;
             case 'f':
                 FILE *file = argc > 2 ? fopen(argv[2],"r") : NULL;
@@ -19,9 +19,7 @@ int main(int argc, char** argv) {
                     printf("Błąd podczas otwierania pliku!\n");
                     exit(0);
                 }
-                char buffer[100];
-                while(fgets(buffer, sizeof(buffer), file))
-                    printf("%s",buffer);
+                gameEngine(file);
                 break;
             case 'h':
                 printf("Pomoc:\n");

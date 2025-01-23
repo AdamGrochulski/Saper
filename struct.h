@@ -25,4 +25,12 @@ typedef struct scores {
     char *name; // nazwa użytkownika
 } highscore;
 
+typedef struct elem {
+    char action;
+    int x;
+    int y;
+    struct elem * nxt;
+} elemt_t;
+typedef struct elem *list_pos;
+
 #endif
