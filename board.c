@@ -31,14 +31,13 @@ void generatorForBoard(Board *board,Pos *pos) {
     iChooseYou(board);
 
     //Pierwszy input gracza, jako że pierwszy ruch narzuca nam wygląd planszy to w funkcji commandPicker zmienna type = 0
-    commandPicker(board,pos,0);
+    commandPicker(board,pos, 0);
 
     //Tworzenie naszej planszy (generowanie oznaczeń w każdej komórce planszy)
     createBoardData(board); //Przypisywanie pamięci do wszystkich argumentów struct Board * board
 
     firstInputPlacement(board, pos); //Wpisywanie pierwszego inputu gracza w dacie structa board
                                      //oraz oznaczanie miejsc wokół niego, jako takie, które nie mogą mieć bomb
-
     bombGeneration(board); //Losowe generowanie bomb na planszy
     
     bombCounter(board); //Zliczanie bomb w celu oznaczenia "wartości" każdego pola na planszy
@@ -51,19 +50,23 @@ Board * createBoardData(Board *board) {
     int i,j;
     int r = board->r;
     int c = board->c;
+    board->score = 0;
+    board->win = 0;
 
-    board->data = (int**) malloc(sizeof(int*) * r);
-    board->shown = (char***) malloc(sizeof(char**) * r);
+    board->data = malloc(sizeof(int*) * r);
+    board->shown_origin = malloc(sizeof(char*) * r);
+    board->shown = malloc(sizeof(char*) * r);
     for (i=0; i < r; i++) {
-        board->data[i] = (int*) malloc(sizeof(int)*c);
-        board->shown[i] = (char**) malloc(sizeof(char*)*c);
+        board->data[i] = malloc(sizeof(int)*c);
+        board->shown[i] = malloc(sizeof(char)*c);
+        board->shown_origin = malloc(sizeof(char) * c);
     }
     //Tablice z danymi uzupełnia liczbą -3 (w kodzie oznacza liczbę, która nie została przetworzona)
     //oraz tablice widoczną dla gracza uzupełnia " " (nie odkryte pole)
     for (i=0; i < r; i++) {
         for (j=0; j < c; j++) {
             board->data[i][j]=-3;
-            board->shown[i][j]=" ";
+            board->shown[i][j]= ' ';
         }
     }
 }
@@ -153,19 +156,23 @@ void printBoard(Board *board) {
             printf("0");
         printf("%d |",i+1);
         for (j = 0; j < c; j++) {
-            if (board->shown[i][j]!=" ") {
-                if (board->data[i][j] >= 0) {
-                    Colors(board->data[i][j]);
-                    printf("  %s", board->shown[i][j]);
+            if(board->shown[i][j] != ' ') {
+                if(board->data[i][j] >= 0 && board->shown[i][j] != 'F') {
+                    Colors(board->data[i][j]); // te kolory powinny raczej byc w makrze
+                    printf("  %c", board->shown[i][j]);
                 } 
-                else {
+                else if(board->shown[i][j] == 'F'){
+                    Colors(0); // FLAGA BĘDZIE BIAŁA
+                    printf("  F");    
+                }
+                else{
                     Colors(-1);       
                     printf("  *");
                 }
                 Colors(0);
             }
             else {
-                printf("  %s", board->shown[i][j]);
+                printf("  %c", board->shown[i][j]);
             }
             printf(" |");
         }
@@ -215,5 +222,54 @@ void printBoardDebug(Board *board) {
     printf("\n");
 }
 
+int contains_specific_letter(const char *str, char letter) {
+    while (*str) {
+        if (*str == letter) {
+            return 1;
+        }
+        str++;
+    }
+    return 0;
+}
 
+int generatorFromFile(Board *board,Pos *pos, FILE *file) {
+    int count = 0;
+    int i_line = 0;
+    char lines[MAX_LENGTH][MAX_LINES];
+    while(i_line < MAX_LINES && fscanf(file, "%s", lines[i_line])==1) {
+        i_line++;
+    }
+    fclose(file);
+    board->r=atoi(lines[0]);
+    board->c=atoi(lines[1]);
+    board->m=atoi(lines[2]);
+    board->multiplier=atoi(lines[3]);
+    createBoardData(board);
+    int pos_i = -1;
+    for(int i = 4; i < (board->r*board->c) + 4;i++){
+        int pos_j=(i-4)%(board->c);
+        if(pos_j == 0) {
+            pos_i++;
+        }
+        board->data[pos_i][pos_j]=atoi(lines[i]);
+    }
+    int tmp = (board->r*board->c) + 4;
+    int length = atoi(lines[tmp]);
+    tmp = tmp+1;
+
+    for(int i = 0; i < length*3;i++){
+        if(i%3==0){
+            char action = (lines[i+tmp])[0];
+            int x = atoi(lines[i+tmp+1]);
+            int y = atoi(lines[i+tmp+2]);
+            if(action == 'r' && board->Run==0)
+                playerMove(board,pos,x-1,y-1,0);
+            else {
+                place_flag(board,pos,x-1,y-1);
+            }
+            sync_flag(board, count);
+        }
+    }
+    return count;
+}
 

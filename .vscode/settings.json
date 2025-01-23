@@ -4,6 +4,7 @@
         "stdio.h": "c",
         "levels.h": "c",
         "stdlib.h": "c",
-        "sweeper.h": "c"
+        "sweeper.h": "c",
+        "typeinfo": "c"
     }
 }

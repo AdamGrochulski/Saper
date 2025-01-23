@@ -1,6 +1,7 @@
 #ifndef _HIGHSCORE_H
 #define HIGHSCORE_H
 
+#include "struct.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -11,12 +12,6 @@
 
 // Plik stats.txt:
 // [NAME] [SCORE] [LEVEL]
-
-typedef struct scores {
-    int score;  // wynik gracza
-    int level;  // poziom trudności
-    char *name; // nazwa użytkownika
-} highscore;
 
 highscore* init();
 
@@ -35,5 +30,7 @@ void find_the_best(int i_arr[], int n, int index[]);
 void print_leaderboard();
 
 void free_structure(highscore* wynik);
+
+void print_score(int score, int level, char *name);
 
 #endif
