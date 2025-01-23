@@ -1,5 +1,6 @@
 #include "sweeper.h"
 #include "board.h"
+#include "highscore.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -8,17 +9,25 @@ void gameEngine() {
     //Przypisywania pamięci do struct board oraz struct pos
     Board * board = (Board*) malloc(sizeof(Board));
     Pos * pos = (Pos*) malloc(sizeof(Pos));
+    int count = 0;
     //Funkcja generująca plansze
     generatorForBoard(board,pos);
-
     //Rozgrywka
     revealTiles(board,pos->x,pos->y);
     printBoard(board);
-    //printBoardDebug(board);
+    printBoardDebug(board);
+    board->flag_remain = board->m;
 
     while (board->Run==0) {
         commandPicker(board, pos,1);
-        printf("score: %d\n", board->score); // TO JEST TYLKO POD PODGLĄD
+        sync_flag(board, count);
+    }
+    
+    result(board, count);
+    if(board->win == 1){
+        char* name = nametag();
+        print_score(board->score, board->multiplier, name);
+        free(name);
     }
     free(board);
     free(pos);
@@ -103,41 +112,98 @@ char* toString(int num) {
 }
 
 void place_flag(Board *board, Pos *pos, int x, int y){
-    if(board->shown[x][y] == 'F'){
-        if(board->shown[x][y] == 'F' && board->data[x][y] == -1){
-            board->shown[x][y] = ' ';
-            board->score--;
+    if(board->flag_remain > 0 && board->flag_remain <= board->m)
+        if(board->shown[x][y] == 'F'){
+            if(board->shown[x][y] == 'F' && board->data[x][y] == -1){
+                board->shown[x][y] = ' ';
+                //board->score--;
+            }
+            else if (board->shown[x][y] == 'F' && board->data[x][y] != -1){
+                board->shown[x][y] = ' ';
+                //board->score++;
+            }
+            else if ( board->shown[x][y] == 'F' && board->data[x][y] != -1){
+                board->shown[x][y] = ' ';
+                //board->score++;
+            }
+            // else{
+            //     board->shown[x][y] = board->shown_origin[x][y];
+            // }
         }
-        else if (board->shown[x][y] == 'F' && board->data[x][y] != -1){
-            board->shown[x][y] = ' ';
-            board->score++;
+        else if(board->shown[x][y] == ' '){
+            board->shown[x][y] = 'F';
+            if(board->shown[x][y] == 'F' && board->data[x][y] == -1){
+                //board->score++;
+            }
+            else if(board->shown[x][y] == 'F'&& board->data[x][y] != -1){
+                //board->score--;
+            }
         }
-        else if ( board->shown[x][y] == 'F' && board->data[x][y] != -1){
-            board->shown[x][y] = ' ';
-            board->score++;
+        else{
+            printf("Nie można ustawić flagi na odkrytm miejscu!\n");
         }
-        // else{
-        //     board->shown[x][y] = board->shown_origin[x][y];
-        // }
-    }
-    else if(board->shown[x][y] == ' '){
-        board->shown[x][y] = 'F';
-        if(board->shown[x][y] == 'F' && board->data[x][y] == -1){
-            board->score++;
-        }
-        else if(board->shown[x][y] == 'F'&& board->data[x][y] != -1){
-            board->score--;
-        }
-    }
     else{
-        printf("Nie można ustawić flagi na odkrytm miejscu!\n");
+        printf("Nie można postawić flagi, limit flag został wyczerpany.\n");
     }
     printBoard(board);
 }
+
+// funkcja, syncująca czy flagi sa w miejscu bomby
+// jesli tak to break
+void sync_flag(Board *board, int count){
+    count = 0;
+    board->flag_remain = board->m;
+    for(int i = 0; i < board->r; i++){
+        for(int j = 0; j < board->c; j++){
+            if(board->shown[i][j] == 'F' && board->data[i][j] == -1){
+                count++;
+            }
+        }
+    }
+    for(int i = 0; i < board->r; i++){
+        for(int j = 0; j < board->c; j++){
+            if(board->shown[i][j] == 'F'){
+                board->flag_remain--;
+            }
+        }
+    }
+    printf("score: %d\n", count); // TO JEST TYLKO POD PODGLĄD
+    printf("Flagi do użycia: %d\n", board->flag_remain); // TO JUŻ POWINNO BYC
+    if(count == board->m){
+        board->Run = 1;
+        board->win = 1;
+    }
+    else{
+        board->Run = 0;
+    }
+    board->score = count;
+}
+
 
 char to_char(int number) {
     if (number >= 0 && number <= 9) {
         return (char)(number + '0');
     }
     return '\0';
+}
+
+char *nametag() {
+    char *name = malloc(32);
+    int valid_input = 0;
+    while (!valid_input) {
+        printf("Wprowadź swoją nazwę gracza: ");
+        if (scanf("%31s", name) == 1) { 
+            valid_input = 1;
+        }
+    }
+    return name;
+}
+
+void result(Board* board, int count){
+    if(board->win == 1){
+       printf("You won!\n");
+    }
+    else{
+        printf("Game over!\n");
+    }
 }

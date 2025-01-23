@@ -53,6 +53,7 @@ Board * createBoardData(Board *board) {
     int r = board->r;
     int c = board->c;
     board->score = 0;
+    board->win = 0;
 
     board->data = malloc(sizeof(int*) * r);
     board->data_origin = malloc(sizeof(int*) * r);
@@ -160,7 +161,7 @@ void printBoard(Board *board) {
         printf("%d |",i+1);
         for (j = 0; j < c; j++) {
             if(board->shown[i][j] != ' ') {
-                if(board->data[i][j] >= 0) {
+                if(board->data[i][j] >= 0 && board->shown[i][j] != 'F') {
                     Colors(board->data[i][j]); // te kolory powinny raczej byc w makrze
                     printf("  %c", board->shown[i][j]);
                 } 
