@@ -43,8 +43,6 @@ void generatorForBoard(Board *board,Pos *pos) {
     bombCounter(board); //Zliczanie bomb w celu oznaczenia "wartości" każdego pola na planszy
 
     board->Run=0; //Zdefiniowanie, że gra jest w toku
-
-    origin_sync(board);
 }
 
 Board * createBoardData(Board *board) {
@@ -56,12 +54,10 @@ Board * createBoardData(Board *board) {
     board->win = 0;
 
     board->data = malloc(sizeof(int*) * r);
-    board->data_origin = malloc(sizeof(int*) * r);
     board->shown_origin = malloc(sizeof(char*) * r);
     board->shown = malloc(sizeof(char*) * r);
     for (i=0; i < r; i++) {
         board->data[i] = malloc(sizeof(int)*c);
-        board->data_origin[i] = malloc(sizeof(int)*c);
         board->shown[i] = malloc(sizeof(char)*c);
         board->shown_origin = malloc(sizeof(char) * c);
     }
@@ -224,23 +220,6 @@ void printBoardDebug(Board *board) {
     }
     printf("=\n");
     printf("\n");
-}
-
-//synchronizuje data i data_origin
-void origin_sync(Board *board){
-    for(int i = 0; i < board->r; i++){
-        for(int j = 0; j < board->c; j++){
-            board->data_origin[i][j] = board->data[i][j];
-        }
-    } 
-}
-
-void shown_origin_sync(Board *board){
-    for(int i = 0; i < board->r; i++){
-        for(int j = 0; j < board->c; j++){
-            board->shown_origin[i][j] = board->shown[i][j];
-        }
-    } 
 }
 
 int contains_specific_letter(const char *str, char letter) {

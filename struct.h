@@ -5,7 +5,6 @@ typedef struct {
     int r,c; //Wielkość tablicy r(liczba wierszy) x c(liczba kolumn)
     int m; //Ilość min
     int **data; //Wartości każde pozycji na planszy sapera od (-1 - 8), gdzie -1 to bomba, 0 - 8 liczba bomb wokół danego pola
-    int **data_origin;//////////////////////////////////////////////////////////////////////////////////////////////////////////teoretycznie mozna usunąc
     char **shown; //Wartości które są widoczne
     char **shown_origin;
     int flag_remain;

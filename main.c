@@ -11,7 +11,6 @@ int main(int argc, char** argv) {
     while(option = getopt(argc, argv, "pfh")) {
         switch(option) {
             case 'p':
-                printf("Play\n");
                 gameEngine();
                 break;
             case 'f':
