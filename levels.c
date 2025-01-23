@@ -19,7 +19,7 @@ void iChooseYou(Board *board) {
             printf("Twoja plansza ma wymiary 50x50 i 625 min\n");
             board->r=50;
             board->c=50;
-            board->m=625;
+            board->m=1250;
             board->multiplier=4;
             break;      
         case 1: //Łatwy poziom trudności
@@ -61,7 +61,8 @@ void iChooseYou(Board *board) {
             } else { 
                 printf("Długość i szerokość planszy musi być w zakresie [9,49]!\n");
                 exit(0);
-            } 
+            }
+            break;
         default:
             printf("Error - niepoprawna składnia polecenia!\n");
             exit(0);

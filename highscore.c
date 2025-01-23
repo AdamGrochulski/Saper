@@ -120,6 +120,13 @@ void free_structure(highscore* wynik) {
     free(wynik);
 }
 
+void print_score(int score, int level, char *name){
+    highscore* wynik = init();
+    send_data(wynik, score, level, name);
+    write_and_save(wynik);
+    free_structure(wynik);
+    print_leaderboard();
+} 
 /*
 int main() {
     int score = 4000;
