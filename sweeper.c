@@ -17,7 +17,7 @@ void gameEngine(FILE *file) {
         //Rozgrywka
         revealTiles(board,pos->x,pos->y);
         printBoard(board);
-        printBoardDebug(board);
+        //printBoardDebug(board);
         board->flag_remain = board->m;
         while (board->Run==0) {
             commandPicker(board, pos, 1);
