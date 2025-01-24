@@ -243,6 +243,7 @@ int generatorFromFile(Board *board,Pos *pos, FILE *file) {
     board->r=atoi(lines[0]);
     board->c=atoi(lines[1]);
     board->m=atoi(lines[2]);
+    board->flag_remain=board->m;
     board->multiplier=atoi(lines[3]);
     createBoardData(board);
     int pos_i = -1;
@@ -262,14 +263,16 @@ int generatorFromFile(Board *board,Pos *pos, FILE *file) {
             char action = (lines[i+tmp])[0];
             int x = atoi(lines[i+tmp+1]);
             int y = atoi(lines[i+tmp+2]);
+            printf("%c %d %d\n",action,x,y);
             if(action == 'r' && board->Run==0)
                 playerMove(board,pos,x-1,y-1,0);
             else {
                 place_flag(board,pos,x-1,y-1);
+                sync_flag(board, count);
             }
-            sync_flag(board, count);
         }
+            
     }
-    return count;
+    return board->score;
 }
 

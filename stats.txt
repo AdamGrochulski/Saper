@@ -1,3 +1,5 @@
 Dziekan123 0 1
 Rektor 10 1
 Adax 10 1
+Adax 10 1
+Bot 10 1

@@ -17,7 +17,7 @@ void gameEngine(FILE *file) {
         //Rozgrywka
         revealTiles(board,pos->x,pos->y);
         printBoard(board);
-        //printBoardDebug(board);
+        printBoardDebug(board);
         board->flag_remain = board->m;
         while (board->Run==0) {
             commandPicker(board, pos, 1);
@@ -172,7 +172,7 @@ void sync_flag(Board *board, int count){
             }
         }
     }
-    printf("score: %d\n", count); // TO JEST TYLKO POD PODGLĄD
+    //printf("score: %d\n", count); // TO JEST TYLKO POD PODGLĄD
     printf("Flagi do użycia: %d\n", board->flag_remain); // TO JUŻ POWINNO BYC
     if(count == board->m){
         board->Run = 1;
